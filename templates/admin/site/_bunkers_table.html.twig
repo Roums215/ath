@@ -1,0 +1,44 @@
+<table class="table table-striped table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th>Nom</th>
+            <th>Numéro</th>
+            <th>État</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for bunker in field.value %}
+        <tr>
+            <td>
+              <a href="{{ ea_url().setController('App\\Controller\\Admin\\BunkerCrudController').setAction('detail').setEntityId(bunker.id) }}">
+                  {{ bunker.nom }}
+              </a>
+            </td>
+            <td>{{ bunker.benum }}</td>
+            <td>
+                {% set etat_class = '' %}
+                {% if bunker.etat == 'Pas de retard' %}
+                    {% set etat_class = 'text-success' %}
+                {% elseif bunker.etat == 'Retard 5 min' %}
+                    {% set etat_class = 'text-warning' %}
+                {% elseif bunker.etat == 'Retard 10 min' %}
+                    {% set etat_class = 'text-warning font-weight-bold' %}
+                {% elseif bunker.etat == 'Retard 15 min' %}
+                    {% set etat_class = 'text-danger' %}
+                {% elseif bunker.etat == 'Hors service' %}
+                    {% set etat_class = 'text-danger font-weight-bold' %}
+                {% endif %}
+                <span class="{{ etat_class }}">{{ bunker.etat }}</span>
+            </td>
+            <td>
+                <a href="{{ ea_url().setController('App\\Controller\\Admin\\BunkerCrudController').setAction('edit').setEntityId(bunker.id) }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="4" class="text-center">Aucun bunker</td></tr>
+    {% endfor %}
+    </tbody>
+</table>

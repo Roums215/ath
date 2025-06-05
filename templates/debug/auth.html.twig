@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Débogage Authentification{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Débogage Authentification</h1>
+        
+        <h2>Utilisateur</h2>
+        {% if debug.user %}
+            <table class="table">
+                <tr>
+                    <th>Type</th>
+                    <td>{{ debug.user.class }}</td>
+                </tr>
+                <tr>
+                    <th>Identifiant</th>
+                    <td>{{ debug.user.identifier }}</td>
+                </tr>
+                <tr>
+                    <th>Rôles</th>
+                    <td>{{ debug.user.roles|join(', ') }}</td>
+                </tr>
+            </table>
+        {% else %}
+            <div class="alert alert-warning">Aucun utilisateur connecté</div>
+        {% endif %}
+        
+        <h2>Token</h2>
+        {% if debug.token %}
+            <table class="table">
+                <tr>
+                    <th>Type</th>
+                    <td>{{ debug.token.class }}</td>
+                </tr>
+                <tr>
+                    <th>Authentifié</th>
+                    <td>{{ debug.token.authenticated ? 'Oui' : 'Non' }}</td>
+                </tr>
+            </table>
+        {% else %}
+            <div class="alert alert-warning">Aucun token d'authentification</div>
+        {% endif %}
+        
+        <h2>Session</h2>
+        {% if debug.session %}
+            <table class="table">
+                {% for key, value in debug.session %}
+                    <tr>
+                        <th>{{ key }}</th>
+                        <td>
+                            {% if value is iterable %}
+                                <pre>{{ value|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <div class="alert alert-warning">Aucune donnée en session</div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <a href="{{ path('login') }}" class="btn btn-primary">Retour à la page de connexion</a>
+        </div>
+    </div>
+{% endblock %}

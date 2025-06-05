@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* CSS LOGIN */
+        .containerFormLogo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+            margin: 10%;
+        }
+
+        .fit-picture {
+            width: 50%;
+        }
+        
+        .login-container {
+            background-color: #0a2a4d;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: #ffffff;
+            width: 300px;
+        }
+        
+        .input-login {
+            margin-bottom: 20px;
+        }
+
+        .login-container button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .login-container input[type="text"],
+        .login-container input[type="password"],
+        .login-container select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ffffff;
+            border-radius: 5px;
+            background-color: #0a2a4d;
+            color: #ffffff;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            margin-top: 15px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="containerFormLogo">
+        <div class="login-container">
+            <form method="post">
+                <h2>Veuillez vous connecter</h2>
+
+                {% if error %}
+                    <p class="error">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+                {% endif %}
+
+                <input class="input-login" type="text" name="_username" value="{{ last_username }}" placeholder="Nom d'utilisateur" required autocomplete="username">
+                <input class="input-login" type="password" name="_password" placeholder="Mot de passe" required autocomplete="current-password">
+
+                <select name="user_type" class="input-login">
+                    <option value="admin">Admin</option>
+                    <option value="personnel">Personnel</option>
+                </select>
+
+                <button class="input-login" type="submit">Se connecter</button>
+            </form>
+        </div>
+        
+        <img class="fit-picture" src="{{ asset('images/LogoBlancRamsaySante.jpeg') }}" alt="Logo Ramsay Santé" />
+    </div>
+{% endblock %}

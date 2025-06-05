@@ -1,0 +1,250 @@
+{% extends 'base.html.twig' %}
+{% block title %}ATH – {{ site.nom }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        width:100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #0D3050;
+    }
+
+    .ath-screen {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      
+    }
+    .header, .footer {
+      flex-shrink: 0;
+      background: #0D3050; 
+      color: #fff; 
+      text-align: center; 
+      padding: 1vw; 
+      font-size: 5vw;
+    }
+
+    .content-principale{
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      height: 100%;
+    }
+
+    table { height: 100%; width: 100%; border-collapse: collapse; }
+    thead th {
+      background: #0a2e4d; 
+      color: #fff; 
+      font-size: 4vw; 
+      text-align: center; 
+      padding: 20px; 
+      border: none;
+
+    }
+    tbody tr { height: auto; background: #D1DFF1; }
+    td {
+      padding: 1vw; 
+      border: none; 
+      vertical-align: middle; 
+      font-size: 50px;
+      
+    }
+    .room {
+      font-size: 8vw; 
+      font-weight: bold;
+      text-align: center;
+    }
+    .label {
+      font-size: 2vw; 
+      color: #0D3050;
+    }
+    .status-text {
+      font-size: 6vw; 
+      font-weight: bold; 
+      margin-left: 55px;
+    }
+    .status-icon i {
+      font-size: 3vw;
+      border-radius:solid 1px ;
+    }
+
+    .column-room{
+      background-color: #A2C0E3;
+      border: 1px solid #0D3B66;
+
+    }
+    .column-state{
+      background-color: #D1DFF1;
+      border: 1px solid #0D3B66;
+ 
+      text-align: center;
+    }
+    .state.ok, .green { color: green; }
+    .state.delay, .orange { color: rgb(255, 94, 0); }
+    .state.maintenance, .blue { color: blue; }
+    .state.hs, .red { color: red; }
+    /* Styles pour les pages d'information (images) */
+    .info-page {
+      width: 100%;
+      height: 100vh;
+      background-size: cover;
+      background-position: center;
+    }
+    /* Transition fade */
+    .fade-out {
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    #slide-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="ath-screen">
+    <div class="header"></div>
+    <div id="slide-container" class="content-principale"></div>
+    <div class="footer">Radiothérapie {{ site.nom }}</div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        const URL_DATA = '{{ path('ath_data', {id: site.id}) }}';
+        const DISPLAY_TIME = 10000;         // 10 s
+        const REFRESH_TIME = 60000;         // 60 s
+
+        let groups   = [];
+        let current  = 0;
+        let timerId  = null;
+
+        /**
+         * Regroupe le tableau de bunkers en sous-tableaux selon la
+         * règle métier demandée :
+         *   1 → [1]          2 → [2]          3 → [3]
+         *   4 → [2,2]        5 → [3,2]        6 → [3,3]
+         *   7 → [3,2,2]      8 → [3,3,2]      9+ → tranches de 3
+         */
+        function groupBunkers(list) {
+            const n = list.length;
+
+            if (n <= 3) {
+                // 1, 2 ou 3  → tout sur un seul slide
+                return [list];
+            }
+
+            if (n === 4) {
+                return [list.slice(0, 2), list.slice(2)];      // 2 + 2
+            }
+
+            if (n === 5) {
+                return [list.slice(0, 3), list.slice(3)];      // 3 + 2
+            }
+
+            if (n === 6) {
+                return [list.slice(0, 3), list.slice(3)];      // 3 + 3
+            }
+
+            if (n === 7) {
+                return [list.slice(0, 3), list.slice(3, 5), list.slice(5)];   // 3 + 2 + 2
+            }
+
+            if (n === 8) {
+                return [list.slice(0, 3), list.slice(3, 6), list.slice(6)];   // 3 + 3 + 2
+            }
+
+            // 9 + : on enchaîne par paquets de 3
+            const res = [];
+            for (let i = 0; i < n; i += 3) {
+                res.push(list.slice(i, i + 3));
+            }
+            return res;
+        }
+
+        function statusClass(etat) {
+            const e = etat.toLowerCase();
+            if (e === 'pas de retard')        return 'ok';
+            if (e.startsWith('retard'))       return 'delay';
+            if (e === 'hors service')         return 'hs';
+            return 'maintenance';
+        }
+
+        function renderGroup(g) {
+            const rows = g.map(b => `
+                <tr>
+                    <td class="column-room">
+                        <div class="room">${b.nom}</div>
+                        <div class="label">Salle</div>
+                    </td>
+                    <td class="column-state">
+                        <div class="status-text ${statusClass(b.etat)}">${b.etat}</div>
+                        <div class="status-icon"><i class="fas fa-circle ${statusClass(b.etat)}"></i></div>
+                    </td>
+                </tr>`).join('');
+            return `<table><thead><tr><th>Bunker</th><th>État</th></tr></thead>
+                    <tbody>${rows}</tbody></table>`;
+        }
+
+        function show() {
+            const wrap = document.getElementById('slide-container');
+            wrap.classList.add('fade-out');
+            setTimeout(() => {
+                wrap.innerHTML = renderGroup(groups[current]);
+                wrap.classList.remove('fade-out');
+            }, 500);
+        }
+
+        function next() {
+            current = (current + 1) % groups.length;
+            show();
+            timerId = setTimeout(next, DISPLAY_TIME);
+        }
+        
+        function startCarousel() {
+            show();                               // 1er affichage
+            clearTimeout(timerId);
+
+            if (groups.length > 1) {              // ← seulement si rotation utile
+                timerId = setTimeout(next, DISPLAY_TIME);
+            }
+        }
+
+        async function loadData() {
+            const r     = await fetch(URL_DATA);
+            const json  = await r.json();
+            const oldNb = groups.length;
+
+            groups = groupBunkers(json.bunkers);
+
+            if (groups.length === 0) {
+                document.getElementById('slide-container')
+                        .innerHTML = '<p style="color:#fff">Aucun bunker</p>';
+                return;
+            }
+
+            // Si la segmentation est identique, on garde l'index courant
+            if (groups.length !== oldNb) {
+                current = 0;
+            } else {
+                current = Math.min(current, groups.length - 1);
+            }
+
+            startCarousel();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();                 // première charge
+            setInterval(loadData, REFRESH_TIME);  // refresh silencieux
+        });
+    </script>
+{% endblock %}

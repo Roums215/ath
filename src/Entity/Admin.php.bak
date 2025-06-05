@@ -1,0 +1,98 @@
+<?php
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+
+/**
+ * Admin
+ *
+ * @ORM\Table(name="admin")
+ * @ORM\Entity
+ */
+class Admin implements UserInterface, PasswordAuthenticatedUserInterface
+{
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="Id_Admin", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     */
+    private $idAdmin;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="ANom", type="string", length=50, nullable=false)
+     */
+    private $anom;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="APrenom", type="string", length=50, nullable=false)
+     */
+    private $aprenom;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="AMdp", type="string", length=255, nullable=false)
+     */
+    private $amdp;
+
+    /**
+     * @var \DateTime|null
+     *
+     * @ORM\Column(name="ACreation", type="datetime", nullable=true, options={"default"="current_timestamp()"})
+     */
+    private $acreation = 'current_timestamp()';
+
+    /**
+     * @var array
+     * 
+     * @ORM\Column(name="roles", type="json")
+     */
+    private $roles = [];
+    
+    public function getUserIdentifier(): string
+    {
+        return $this->anom;
+    }
+
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // garantir que chaque admin a au moins ROLE_ADMIN
+        $roles[] = 'ROLE_ADMIN';
+        
+        return array_unique($roles);
+    }
+    
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+        return $this;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->amdp;
+    }
+    
+    public function setPassword(string $pwd): self
+    {
+        $this->amdp = $pwd;
+        return $this;
+    }
+
+    public function eraseCredentials()
+    {
+        // Rien à faire ici
+    }
+
+
+}

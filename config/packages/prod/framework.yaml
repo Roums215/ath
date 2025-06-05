@@ -1,0 +1,5 @@
+framework:
+    router:
+        default_uri: 'https://ath-f2v0.onrender.com'
+    trusted_proxies: '%env(TRUSTED_PROXIES)%'
+    trusted_hosts: '%env(TRUSTED_HOSTS)%'

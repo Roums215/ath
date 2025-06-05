@@ -1,0 +1,7 @@
+framework:
+    csrf_protection:
+        enabled: true
+        
+    # Configuration personnalisée pour désactiver le CSRF uniquement sur certaines routes
+    # Les formulaires de connexion gardent la protection CSRF
+    # Les routes API du personnel n'ont pas de protection CSRF

@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration - Radiothérapie 2025{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-logout {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="admin-container">
+        <div class="header">
+            <h1>Tableau de bord Administrateur</h1>
+            <a href="{{ path('logout') }}" class="btn btn-logout">Déconnexion</a>
+        </div>
+
+        <div class="content">
+            <p>Bienvenue dans l'interface d'administration. Vous avez accès à cette page car vous avez le rôle ROLE_ADMIN.</p>
+            
+            <h2>Fonctionnalités disponibles :</h2>
+            <ul>
+                <li>Gestion des sites (cliniques)</li>
+                <li>Gestion des bunkers</li>
+                <li>Gestion du personnel</li>
+            </ul>
+            
+            <p>Cette page sera remplacée par le tableau de bord EasyAdmin.</p>
+        </div>
+    </div>
+{% endblock %}

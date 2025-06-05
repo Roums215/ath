@@ -1,0 +1,559 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Personnel{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ asset('assets/css/style2.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/css/bunker-status.css') }}">
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    .welcome-message {
+        font-size: 24px;
+        color: #1a3b5d;
+    }
+    .user-info {
+        color: #666;
+    }
+    .navigation {
+        background-color: #1a3b5d;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .navigation a {
+        color: white;
+        text-decoration: none;
+        margin-right: 15px;
+        padding: 8px 12px;
+        border-radius: 4px;
+    }
+    .navigation a:hover {
+        background-color: #2c5282;
+    }
+    .bunker-status {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .bunker-status h2 {
+        color: #1a3b5d;
+        margin-bottom: 15px;
+    }
+    .logout {
+        background-color: #e53e3e;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+    }
+    .logout:hover {
+        background-color: #c53030;
+    }
+    .scroll-x {
+        overflow: auto;
+        white-space: nowrap;
+        margin-bottom: 5%;
+    }
+    .card-groupe-container {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin: 0;
+        padding: 10px 0;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    .card {
+        display: inline-block;
+        vertical-align: middle;
+        background-color: #1a3b5d;
+        border-radius: 10px;
+        padding: 20px;
+        color: white;
+        text-align: center;
+        width: 150px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 2%;
+    }
+    .container-dash-table-personnel {
+        background-color: #f8f9fa;
+        padding: 25px;
+        border-radius: 12px;
+        max-width: 1000px;
+        margin: auto;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    .container-dash-table-personnel h2 {
+        color: #1a3b5d;
+        margin-bottom: 20px;
+        font-weight: 600;
+        border-left: 4px solid #1a3b5d;
+        padding-left: 15px;
+    }
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    thead {
+        background-color: #1a3b5d;
+        color: white;
+    }
+    th {
+        padding: 16px;
+        text-align: left;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+    td {
+        padding: 16px;
+        text-align: left;
+        background-color: white;
+        color: #333;
+        border-bottom: 1px solid #eef2f7;
+        transition: background-color 0.2s ease;
+    }
+    tr:hover td {
+        background-color: #f5f9ff;
+    }
+    tr:last-child td {
+        border-bottom: none;
+    }
+    .table-row-th {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    .action-button {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    select {
+        padding: 10px 12px;
+        border-radius: 6px;
+        border: 1px solid #dae1e7;
+        background-color: white;
+        color: #333;
+        font-size: 14px;
+        min-width: 180px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        transition: all 0.2s ease;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6"><path d="M0 0l6 6 6-6z" fill="%23333"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        padding-right: 25px;
+    }
+    select:focus {
+        outline: none;
+        border-color: #1a3b5d;
+        box-shadow: 0 0 0 3px rgba(26, 59, 93, 0.15);
+    }
+    .button-valide {
+        padding: 10px 16px;
+        border-radius: 6px;
+        border: none;
+        background-color: #1a3b5d;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        min-width: 100px;
+    }
+    .button-valide:hover {
+        background-color: #2c5282;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .button-valide:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Classes pour les états des bunkers dans le tableau */
+    .status--ok {
+        color: #059669 !important;
+        font-weight: 600;
+        position: relative;
+        padding-left: 24px !important;
+    }
+    .status--ok::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        background-color: #059669;
+        border-radius: 50%;
+    }
+    
+    .status--delay-5, .status--delay-10, .status--delay-15,
+    .status--delay-20, .status--delay-25, .status--delay-30 {
+        color: #f59e0b !important;
+        font-weight: 600;
+        position: relative;
+        padding-left: 24px !important;
+    }
+    .status--delay-5::before, .status--delay-10::before, .status--delay-15::before,
+    .status--delay-20::before, .status--delay-25::before, .status--delay-30::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        background-color: #f59e0b;
+        border-radius: 50%;
+    }
+    
+    .status--hs {
+        color: #dc2626 !important;
+        font-weight: 600;
+        position: relative;
+        padding-left: 24px !important;
+    }
+    .status--hs::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        background-color: #dc2626;
+        border-radius: 50%;
+    }
+    
+    .status--maintenance {
+        color: #2563eb !important;
+        font-weight: 600;
+        position: relative;
+        padding-left: 24px !important;
+    }
+    .status--maintenance::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        background-color: #2563eb;
+        border-radius: 50%;
+    }
+    /* 1. — CARTES — */
+    /* conteneur = flex déjà présent → il suffit de donner une largeur fixe */
+    .card-groupe-container .card{
+        width: 140px;             /* largeur réduite */
+        flex: 0 0 140px;          /* empêche le redimensionnement */
+        text-transform: uppercase;
+        min-height: 80px;          /* hauteur minimale réduite */
+        display: flex;            /* utilisation de flexbox */
+        flex-direction: column;   /* orientation verticale */
+        justify-content: space-between; /* espacement optimal */
+        padding: 10px;            /* padding réduit */
+        margin: 5px;              /* marge réduite */
+        position: relative;       /* pour le badge d'état */
+    }
+    
+    .card .title {
+        font-weight: bold;
+        font-size: 1rem;
+        margin-bottom: 5px;
+        text-align: center;
+    }
+
+    /* statut à l'intérieur de la carte : badge simple */
+    .card-groupe-container .statuts{
+        display: block;
+        font-size: .8rem;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 4px 6px;
+        border-radius: 4px;
+        text-align: center;
+    }
+    
+    /* Indication d'état par couleur de bordure */
+    .card.status--ok { 
+        border-left: 4px solid #059669;
+    }
+    .card.status--hs { 
+        border-left: 4px solid #dc2626;
+    }
+    .card.status--maintenance { 
+        border-left: 4px solid #2563eb;
+    }
+    .card[class*="status--delay"] { 
+        border-left: 4px solid #f59e0b;
+    }
+
+    /* 2. — TABLEAU — */
+
+    /* Répartition largeurs : 20 % – 40 % – 40 % (à adapter) */
+    table thead th:nth-child(1),
+    table tbody td:nth-child(1){ width: 20%; }
+    table thead th:nth-child(2),
+    table tbody td:nth-child(2){ width: 40%; }
+    table thead th:nth-child(3),
+    table tbody td:nth-child(3){ width: 40%; }
+
+    /* On aligne le contenu verticalement au milieu pour toutes les cellules */
+    table td{ vertical-align: middle; }
+
+    /* L'état actuel : on force le label sur une ligne + ellipse si trop long */
+    .current_state{
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* 3. — SELECT + BOUTON — */
+    /* On passe le flex sur la cellule plutôt que sur l'inner-div */
+    td.action-button{
+        display: flex;
+        gap: .5rem;
+    }
+
+    /* le select prend tout l'espace restant, le bouton garde sa largeur mini */
+    td.action-button select{ flex: 1 1 auto; }
+    td.action-button .button-valide{ white-space: nowrap; }
+
+    /* 4. — COULEURS D'ÉTAT — */
+    /* Nuance plus douce sur fond clair */
+    .status--ok         { color: #059669; }
+    .status--hs         { color: #dc2626; }
+    .status--maintenance{ color: #2563eb; }
+    /* jaune/orange pour tous les "retard" */
+    [class*="status--delay"]{ color: #d97706; }
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // Définition des URLs - version simpliée sans CSRF
+    const URL_GET_BUNKERS = '{{ path("personnel_api_bunkers") }}';
+    const URL_UPDATE_BUNKER = '{{ path("personnel_api_update_bunker") }}';
+    
+    function classFor(etat) {
+        switch (etat.toLowerCase()) {
+            case 'pas de retard':        return 'status--ok';
+            case 'retard 5 min':         return 'status--delay-5';
+            case 'retard 10 min':        return 'status--delay-10';
+            case 'retard 15 min':        return 'status--delay-15';
+            case 'retard 20 min':        return 'status--delay-20';
+            case 'retard 25 min':        return 'status--delay-25';
+            case 'retard 30 min':        return 'status--delay-30';
+            case 'retard 45 min':        return 'status--delay-45';
+            case 'retard 1h':
+            case 'retard 1h30':
+            case 'retard 2h':            return 'status--delay-60';
+            case 'hors service':         return 'status--hs';
+            case 'maintenance':          return 'status--maintenance';
+            default:                     return 'status--ok';
+        }
+    }
+    
+    $(document).ready(function() {
+        chargeBunkers();
+        
+        function chargeBunkers() {
+            $.ajax({
+                url: URL_GET_BUNKERS,
+                type: 'GET',
+                success: function(response) {
+                    $('#cards-container').empty();
+                    $('#bunkers-table').empty();
+                    
+                    response.forEach(function(bunker) {
+                        let bId = bunker.Id_Bunker;
+                        let bName = bunker.BNom;
+                        let bEtat = bunker.BEtat || "Pas de retard";
+                        let cls = classFor(bEtat);
+                        
+                        let cardB = `
+                            <div class="card ${cls}">
+                                <div class="title">
+                                    ${bName}
+                                </div>
+                                <div class="statuts">
+                                    ${bEtat}
+                                </div>
+                            </div>
+                        `;
+                        $('#cards-container').append(cardB);
+                        
+                        let ligneB = `
+                            <tr data-bunker-id="${bId}">
+                                <td>
+                                    ${bName}
+                                </td>
+                                <td class="current_state ${cls}">
+                                    ${bEtat}
+                                </td>
+                                <td class="action-button">
+                                    <select class="select-option">
+                                        <option disabled selected>Choisir un état</option>
+                                        <option>Pas de retard</option>
+                                        <option>Retard 5 min</option>
+                                        <option>Retard 10 min</option>
+                                        <option>Retard 15 min</option>
+                                        <option>Retard 20 min</option>
+                                        <option>Retard 25 min</option>
+                                        <option>Retard 30 min</option>
+                                        <option>Retard 45 min</option>
+                                        <option>Retard 1h</option>
+                                        <option>Retard 1h30</option>
+                                        <option>Retard 2h</option>
+                                        <option>Hors service</option>
+                                        <option>Maintenance</option>
+                                    </select>
+                                    <button class="button-valide">Valider</button>
+                                </td>
+                            </tr>
+                        `;
+                        $('#bunkers-table').append(ligneB);
+                    });
+                },
+                error: function(error) {
+                    console.error("Erreur lors du chargement des bunkers", error);
+                }
+            });
+        }
+        
+        $(document).on('click', '.button-valide', function() {
+            let ligne = $(this).closest('tr');
+            let bunkerId = ligne.data('bunker-id');
+            let newEtat = ligne.find('.select-option').val();
+            
+            if(!newEtat) {
+                alert("Veuillez choisir un état !");
+                return;
+            }
+            
+            // Version simplifiée sans FormData
+            console.log('Envoi de données simple:', { bunker_id: bunkerId, new_etat: newEtat });
+            
+            $.ajax({
+                url: URL_UPDATE_BUNKER,
+                type: 'POST',
+                data: {
+                    'id': bunkerId,
+                    'etat': newEtat
+                },
+                success: function(response) {
+                    if(response.success) {
+                        // Mise à jour directe de la cellule sans recharger toute la liste
+                        ligne.find('.current_state')
+                             .text(newEtat)
+                             .removeClass()
+                             .addClass('current_state ' + classFor(newEtat));
+                             
+                        // Mise à jour des cartes
+                        chargeBunkers();
+                    } else {
+                        alert("Erreur : " + (response.message || "Une erreur est survenue"));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erreur AJAX:', status, error);
+                    console.log('Réponse brute:', xhr.responseText);
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        console.log('Réponse JSON:', response);
+                        alert('Erreur: ' + (response.message || error));
+                    } catch (e) {
+                        console.log('Impossible de parser la réponse JSON');
+                        alert('Erreur serveur: ' + xhr.status + ' ' + error);
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="header">
+        <div class="welcome-message">
+            Bienvenue, {{ user.pNom }} {{ user.pPrenom }} !
+        </div>
+        <a href="{{ path('logout') }}" class="logout">Déconnexion</a>
+    </div>
+    
+    <div class="navigation">
+        <a href="{{ path('personnel_dashboard_home') }}">Dashboard</a>
+        <!-- Ajoutez d'autres liens de navigation ici si nécessaire -->
+    </div>
+    
+    <div class="bunker-status">
+        <h2>Statut des Bunkers</h2>
+        
+        {% if bunkers is empty %}
+            <p>Aucun bunker n'est disponible pour votre site.</p>
+        {% else %}
+            <div class="scroll-x">
+                <div class="card-groupe-container" id="cards-container">
+                    <!-- Les cartes des bunkers seront ajoutées ici par JavaScript -->
+                </div>
+            </div>
+            
+            <div class="container-dash-table-personnel">
+                <h2>Gestion des Bunkers</h2>
+                <table>
+                    <thead>
+                        <tr class="table-row-th">
+                            <th>Bunker</th>
+                            <th>État actuel</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bunkers-table">
+                        <!-- Les lignes du tableau seront ajoutées ici par JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="user-info">
+        <h2>Informations Utilisateur</h2>
+        <p><strong>Identifiant:</strong> {{ user.userIdentifier }}</p>
+        <p><strong>Rôle:</strong> {{ user.roles[0] }}</p>
+        {% if site %}
+            <p><strong>Site:</strong> {{ site.nom }}</p>
+        {% else %}
+            <p><strong>Site:</strong> Non assigné</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

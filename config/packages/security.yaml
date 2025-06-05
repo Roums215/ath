@@ -1,0 +1,81 @@
+# config/packages/security.yaml
+security:
+    ###########################################################################
+    # 1. Encodage des mots de passe
+    ###########################################################################
+    password_hashers:
+        App\Entity\Admin:
+            algorithm: auto
+        App\Entity\Personnel:
+            algorithm: auto
+
+    ###########################################################################
+    # 2. Providers : on déclare d’abord chacun, puis un provider « chain »
+    ###########################################################################
+    providers:
+        admins:
+            entity:
+                class: App\Entity\Admin
+                property: ANom          # <- colonne unique de la table admin
+        personnels:
+            entity:
+                class: App\Entity\Personnel
+                property: PNom          # <- colonne unique de la table personnel (attention à la casse)
+        chain_provider:
+            chain:
+                providers: [admins, personnels]
+
+    ###########################################################################
+    # 3. Firewalls
+    ###########################################################################
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: true
+            provider: chain_provider     # <-- le nom exact défini ci-dessus
+            custom_authenticator: App\Security\LoginFormAuthenticator
+            logout:
+                path:   logout
+                target: /
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800 # 1 semaine
+
+    ###########################################################################
+    # 4. Hiérarchie & règles d’accès
+    ###########################################################################
+    role_hierarchy:
+        ROLE_ADMIN:        ROLE_PERSONNEL
+        ROLE_SUPER_ADMIN:  ROLE_ADMIN
+
+    access_control:
+        # 1) formulaires d'authentification et ATH peuvent être publics
+        - { path: ^/login,         roles: PUBLIC_ACCESS }
+        - { path: ^/ath,           roles: PUBLIC_ACCESS }
+
+        # 2) endpoints AJAX du personnel (APIs)
+        - { path: ^/personnel/api, roles: ROLE_PERSONNEL }
+
+        # 3) pages standard du personnel (Dashboard, etc.)
+        - { path: ^/personnel,     roles: ROLE_PERSONNEL }
+
+        # 4) interface EasyAdmin (strictement administrateurs)
+        - { path: ^/admin,         roles: ROLE_ADMIN }
+
+        # 5) par défaut, tout utilisateur authentifié peut accéder aux autres routes
+        - { path: ^/,              roles: IS_AUTHENTICATED_FULLY }
+
+###########################################################################
+# 5. Config « test » (inchangé) : on garde la partie générée automatiquement
+###########################################################################
+when@test:
+    security:
+        password_hashers:
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4
+                time_cost: 3
+                memory_cost: 10
