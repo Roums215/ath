@@ -6,6 +6,13 @@ echo "[entrypoint] Démarrage de l'application Radiothérapie Bunker Management.
 # Note: APP_ENV=prod et APP_DEBUG=false sont configurés par défaut en production
 echo "[entrypoint] Démarrage de l'application en mode production sécurisé..."
 
+# S'assurer que le dossier d'uploads existe et a les bonnes permissions
+echo "[entrypoint] Vérification et création du dossier d'uploads pour les images..."
+mkdir -p /var/www/public/uploads/sites
+chown -R nobody:nobody /var/www/public/uploads
+chmod -R 775 /var/www/public/uploads
+echo "[entrypoint] Dossier d'uploads configuré avec les permissions correctes."
+
 # Configurer les paramètres PHP pour la production
 for php_ini in /etc/php*/*/php.ini /etc/php/*/php.ini; do
   if [ -f "$php_ini" ]; then
@@ -75,6 +82,15 @@ if ! command -v netstat >/dev/null 2>&1; then
   apt-get update -q && apt-get install -qy net-tools
 fi
 
+# Vérifier à nouveau les permissions du dossier uploads
+# C'est crucial après les migrations et avant le démarrage du serveur
+echo "[entrypoint] Vérification finale des permissions du dossier uploads..."
+ls -la /var/www/public/uploads/sites || echo "Le dossier n'existe pas encore, création..."
+mkdir -p /var/www/public/uploads/sites
+chown -R nobody:nobody /var/www/public/uploads
+chmod -R 775 /var/www/public/uploads
+echo "[entrypoint] Permissions du dossier uploads vérifiées."
+
 # On démarre d'abord PHP-FPM en arrière-plan, puis on vérifie qu'il est bien démarré
 echo "[entrypoint] Démarrage de PHP-FPM en arrière-plan..."
 
@@ -108,3 +124,7 @@ caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
 
 # Nous ne démarrons plus PHP-FPM ici car il est déjà démarré en arrière-plan plus haut
 # Caddy est maintenant le processus principal (foreground) qui maintient le container actif
+
+# Note: Si vous rencontrez toujours des erreurs 500 après ce déploiement,
+# vous pouvez activer temporairement le mode debug en définissant les variables
+# d'environnement APP_ENV=dev et APP_DEBUG=1 dans les paramètres Render
