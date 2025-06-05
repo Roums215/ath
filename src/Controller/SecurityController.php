@@ -9,6 +9,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class SecurityController extends AbstractController
 {
@@ -27,10 +28,24 @@ class SecurityController extends AbstractController
         ]);
     }
 
+    /**
+     * Déconnexion « manuelle » par GET (sans CSRF).
+     * On vide le token, on invalide la session, puis on redirige.
+     */
     #[Route('/logout', name: 'logout', methods: ['GET'])]
-    public function logout(): void
+    public function logout(Request $request, TokenStorageInterface $tokenStorage): Response
     {
-        // Cette méthode sera interceptée par le firewall, mais au cas où
+        // 1) vider le token pour déconnecter immédiatement
+        $tokenStorage->setToken(null);
+
+        // 2) invalider la session pour supprimer toutes les données
+        $session = $request->getSession();
+        if ($session) {
+            $session->invalidate();
+        }
+
+        // 3) rediriger vers la page de login
+        return $this->redirectToRoute('login');
     }
     
     #[Route('/debug/auth', name: 'debug_auth')]

@@ -37,10 +37,7 @@ security:
             lazy: true
             provider: chain_provider     # <-- le nom exact défini ci-dessus
             custom_authenticator: App\Security\LoginFormAuthenticator
-            logout:
-                path:   logout
-                target: login       # après logout, redirige vers le login (route "login")
-                methods: [GET]      # ← important : on n'accepte que GET (plus de POST/CSRF)
+            # Pas de section logout ici, car on implémente manuellement dans le contrôleur
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800 # 1 semaine
