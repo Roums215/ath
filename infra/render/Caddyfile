@@ -3,26 +3,39 @@
 }
 
 :80 {
-    # On ne redirige PLUS vers HTTPS - Render s'en charge déjà
     root * /var/www/public
     encode zstd gzip
 
-    # Connexion TCP vers PHP-FPM qui écoute sur le port 9000 par défaut
+    # 1) Pour toutes les URLs, d'abord essayer de trouver un fichier statique dans public/
+    #    sinon passer la requête à index.php (front-controller Symfony)
+    try_files {path} {path}/ /index.php?{query}
+
+    # 2) Envoi des requêtes PHP vers PHP-FPM
     php_fastcgi 127.0.0.1:9000
 
-    # Entêtes de sécurité
+    # 3) On définit un matcher @no_html_cache pour désactiver le cache sur les pages "dynamiques"
+    @no_html_cache {
+        # toutes les routes sans extension statique (login, admin, personnel, ath, …)
+        path /login*
+        path /admin*
+        path /personnel*
+        path /ath*
+        path /debug*
+    }
+    # Demander au navigateur de toujours recharger (no-store, no-cache) ces pages
+    header @no_html_cache Cache-Control "no-store, no-cache, must-revalidate"
+    header @no_html_cache Pragma "no-cache"
+    header @no_html_cache Expires "0"
+
+    # 4) En-têtes de sécurité
     header {
-        # Enable HTTP Strict Transport Security (HSTS)
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        # Prevent browsers from incorrectly detecting non-scripts as scripts
-        X-Content-Type-Options "nosniff"
-        # Disable frame embedding (clickjacking protection)
-        X-Frame-Options "DENY"
-        # Enable cross-site filter (XSS) protection in browsers
-        X-XSS-Protection "1; mode=block"
-        # Force HTTPS
-        Content-Security-Policy "upgrade-insecure-requests;"
+        X-Content-Type-Options   "nosniff"
+        X-Frame-Options          "DENY"
+        X-XSS-Protection         "1; mode=block"
+        Content-Security-Policy  "upgrade-insecure-requests;"
     }
 
+    # 5) Serveur de fichiers statiques (assets JS/CSS/images...) mis en cache normalement
     file_server
 }
