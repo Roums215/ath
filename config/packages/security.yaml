@@ -37,7 +37,9 @@ security:
             lazy: true
             provider: chain_provider     # <-- le nom exact défini ci-dessus
             custom_authenticator: App\Security\LoginFormAuthenticator
-            # Pas de section logout ici, car on implémente manuellement dans le contrôleur
+            logout:
+                path:   logout
+                target: /
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800 # 1 semaine
@@ -53,9 +55,6 @@ security:
         # 1) formulaires d'authentification et ATH peuvent être publics
         - { path: ^/login,         roles: PUBLIC_ACCESS }
         - { path: ^/ath,           roles: PUBLIC_ACCESS }
-        
-        # 1.b) autoriser /logout même pour un anonyme (après déconnexion)
-        - { path: ^/logout$,       roles: IS_AUTHENTICATED_ANONYMOUSLY }
 
         # 2) endpoints AJAX du personnel (APIs)
         - { path: ^/personnel/api, roles: ROLE_PERSONNEL }
