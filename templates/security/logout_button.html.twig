@@ -1,4 +1,1 @@
-<form action="{{ path('logout') }}" method="post">
-    <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-    <button type="submit" class="btn btn-danger">Déconnexion</button>
-</form>
+<a href="{{ path('logout') }}" class="btn btn-danger">Déconnexion</a>

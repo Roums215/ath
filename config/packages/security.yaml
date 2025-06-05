@@ -39,7 +39,8 @@ security:
             custom_authenticator: App\Security\LoginFormAuthenticator
             logout:
                 path:   logout
-                target: /
+                target: login       # après logout, redirige vers le login (route "login")
+                methods: [GET]      # ← important : on n'accepte que GET (plus de POST/CSRF)
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800 # 1 semaine
@@ -55,6 +56,9 @@ security:
         # 1) formulaires d'authentification et ATH peuvent être publics
         - { path: ^/login,         roles: PUBLIC_ACCESS }
         - { path: ^/ath,           roles: PUBLIC_ACCESS }
+        
+        # 1.b) autoriser /logout même pour un anonyme (après déconnexion)
+        - { path: ^/logout$,       roles: IS_AUTHENTICATED_ANONYMOUSLY }
 
         # 2) endpoints AJAX du personnel (APIs)
         - { path: ^/personnel/api, roles: ROLE_PERSONNEL }
