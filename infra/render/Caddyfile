@@ -3,11 +3,7 @@
 }
 
 :80 {
-    # Redirection automatique vers HTTPS
-    redir https://{host}{uri} permanent
-}
-
-:443 {
+    # On ne redirige PLUS vers HTTPS - Render s'en charge déjà
     root * /var/www/public
     encode zstd gzip
 
