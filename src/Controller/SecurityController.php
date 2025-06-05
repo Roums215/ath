@@ -27,7 +27,7 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    #[Route('/logout', name: 'logout')]
+    #[Route('/logout', name: 'logout', methods: ['GET'])]
     public function logout(): void
     {
         // Cette méthode sera interceptée par le firewall, mais au cas où
