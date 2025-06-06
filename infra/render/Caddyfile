@@ -6,11 +6,13 @@
     root * /var/www/public
     encode zstd gzip
 
-    # 1) Pour toutes les URLs, d'abord essayer de trouver un fichier statique dans public/
-    #    sinon passer la requête à index.php (front-controller Symfony)
+    # 1) Serveur de fichiers statiques (assets JS/CSS/images...) - DOIT être avant php_fastcgi
+    file_server
+
+    # 2) Pour toutes les URLs non trouvées comme fichiers statiques, essayer index.php
     try_files {path} {path}/ /index.php?{query}
 
-    # 2) Envoi des requêtes PHP vers PHP-FPM
+    # 3) Envoi des requêtes PHP vers PHP-FPM (APRÈS file_server)
     php_fastcgi 127.0.0.1:9000
 
     # 3) On définit un matcher @no_html_cache pour désactiver le cache sur les pages "dynamiques"
@@ -36,6 +38,5 @@
         Content-Security-Policy  "upgrade-insecure-requests;"
     }
 
-    # 5) Serveur de fichiers statiques (assets JS/CSS/images...) mis en cache normalement
-    file_server
+    # Headers définis précédemment...
 }
