@@ -7,7 +7,9 @@
     <h1>Déconnexion</h1>
     <p>Cliquez sur le bouton ci-dessous pour vous déconnecter :</p>
     
-    <a href="{{ path('logout') }}" class="btn btn-danger" data-turbo="false">Se déconnecter</a>
+    <form action="{{ path('logout') }}" method="GET" data-turbo="false">
+        <button type="submit" class="btn btn-danger">Se déconnecter</button>
+    </form>
     
     <p class="mt-3">
         <a href="{{ path('admin') }}">Retour à l'administration</a>

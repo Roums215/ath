@@ -41,11 +41,19 @@ class SecurityController extends AbstractController
         // 2) invalider la session pour supprimer toutes les données
         $session = $request->getSession();
         if ($session) {
-            $session->invalidate();
+            // Force la destruction de la session existante
+            $session->clear();
+            $session->invalidate(0);
+            $session->migrate(true); // Force la création d'une nouvelle session vide
         }
 
-        // 3) rediriger vers la page de login
-        return $this->redirectToRoute('login');
+        // 3) créer une réponse qui redirige vers login
+        $response = $this->redirectToRoute('login');
+
+        // 4) supprimer explicitement le cookie PHPSESSID (ceinture et bretelles)
+        $response->headers->clearCookie('PHPSESSID');
+        
+        return $response;
     }
     
     #[Route('/debug/auth', name: 'debug_auth')]

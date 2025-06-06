@@ -39,7 +39,7 @@ security:
             custom_authenticator: App\Security\LoginFormAuthenticator
             logout:
                 path:   logout
-                target: /
+                target: /login
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800 # 1 semaine
